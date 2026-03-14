@@ -6,7 +6,7 @@ ENV=""
 INFRA=""
 REGISTRY=""
 YUM=""
-DEFAULT_EMAIL_RECEIVERS="chenjie1@sensetime.com;lizhihui@sensetime.com;wanyongzhen@sensetime.com;zhangmin@sensetime.com;huomingming@sensetime.com;piaoyuankui@sensetime.com;liuyuan@sensetime.com"
+DEFAULT_EMAIL_RECEIVERS="admin1@mycorp.com;admin2@mycorp.com;"
 PRODUCT="SU"
 # ENV="env-stage-a"
 # INFRA="infra-ansible-1.1.0-201804101231.rpm"
@@ -28,9 +28,9 @@ function download_files {
 
     if [ $REGISTRY != "online" ]; then
         echo "start downloading $REGISTRY"
-        wget --progress=bar:force -O $DIR/$REGISTRY  http://sz.rainy.sensesecurity.net/distribution/$REGISTRY
+        wget --progress=bar:force -O $DIR/$REGISTRY  http://sz.rainy.mysecurity.net/distribution/$REGISTRY
         tar zxvf $DIR/$REGISTRY -C $DIR
-        rm -rf $DIR/$REGISTRY 
+        rm -rf $DIR/$REGISTRY
         bash $DIR/infra-distribution-registry/install.sh
     else
         echo "use online registry service."
@@ -38,7 +38,7 @@ function download_files {
 
     if [ $YUM != "online" ]; then
         echo "start downloading $YUM"
-        wget --progress=bar:force -O $DIR/$YUM  http://sz.rainy.sensesecurity.net/distribution/$YUM
+        wget --progress=bar:force -O $DIR/$YUM  http://sz.rainy.mysecurity.net/distribution/$YUM
         tar zxvf $DIR/$YUM -C $DIR
         rm -rf $DIR/$YUM
         bash $DIR/infra-distribution-yum*/install.sh
@@ -49,15 +49,15 @@ function download_files {
 
     if [ $INFRA != "master"  ] && [[ $INFRA != *"branch-"* ]]; then
         echo "start downloading $INFRA"
-        wget --progress=bar:force -O $DIR/$INFRA http://sz.rainy.sensesecurity.net/yum/infra/$INFRA
+        wget --progress=bar:force -O $DIR/$INFRA http://sz.rainy.mysecurity.net/yum/infra/$INFRA
 
         yum localinstall $DIR/$INFRA -y
         rm -rf $DIR/$INFRA
-        
+
     else
         yum install -y python-pip
 
-        git clone http://$git_username:$git_password@gitlab.sz.sensetime.com/rainy/infra/infra-ansible.git $DIR/infra-ansible
+        git clone http://$git_username:$git_password@gitlab.sz.mycorp.com/rainy/infra/infra-ansible.git $DIR/infra-ansible
         cd $DIR/infra-ansible
         if [[ $INFRA = *"branch-"*  ]]; then
             branch=${INFRA/branch-/}
@@ -71,15 +71,15 @@ function download_files {
         python setup.py install
     fi
 
-    
+
 
     if [[ $INFRA = "branch-v2.2" ||  $INFRA = *"ansible-v2.2.0"*  ]]; then
-    
+
         # if [ $PRODUCT = "su" ]; then
-            
+
         #     cd /data
         #     pwd
-        #     wget --progress=bar:force -O /data/models-su.tar.gz http://sz.rainy.sensesecurity.net/distribution/v2.2/models-su.tar.gz
+        #     wget --progress=bar:force -O /data/models-su.tar.gz http://sz.rainy.mysecurity.net/distribution/v2.2/models-su.tar.gz
         #     tar zxvf /data/models-su.tar.gz -C /data
         #     mv /data/RAINY-v2.2-models-local/model_cache  /data/client-model-cache
         #     rm -rf /data/models-su.tar.gz
@@ -88,7 +88,7 @@ function download_files {
         # if [ $PRODUCT = "foundry" ]; then
         cd /data
         pwd
-        wget --progress=bar:force -O /data/models-foundry.tar.gz http://sz.rainy.sensesecurity.net/distribution/v2.2/models-foundry.tar.gz
+        wget --progress=bar:force -O /data/models-foundry.tar.gz http://sz.rainy.mysecurity.net/distribution/v2.2/models-foundry.tar.gz
         tar zxvf /data/models-foundry.tar.gz -C /data
         mv /data/RAINY-v2.2-models /data/model-cache
         rm -rf /data/models-foundry.tar.gz
@@ -101,7 +101,7 @@ function init_infra {
 
     mkdir -p $DIR/rainy && cd $DIR/rainy && infra init .
 
-    git clone --depth 1 http://$git_username:$git_password@gitlab.sz.sensetime.com/rainy/infra/env.git /tmp/infra-envs
+    git clone --depth 1 http://$git_username:$git_password@gitlab.sz.mycorp.com/rainy/infra/env.git /tmp/infra-envs
 
     /usr/bin/cp     /tmp/infra-envs/$ENV/inventory .
     /usr/bin/cp -r  /tmp/infra-envs/$ENV/group_vars .
@@ -216,15 +216,6 @@ function deploy_infra {
 
     echo "INFO: $(date): ansible-playbook apps.yml success!"
 
-    ### step 5 sensenodal need
-    if [ -f gateway.yml ]; then
-        echo "TIMEIT: $(date): start ansible-playbook gateway.yml in $DIR/rainy.."
-        ansible-playbook gateway.yml
-        echo "TIMEIT: $(date): ansible-playbook gateway.yml finished!"
-
-        exit_with 0 "INFO: $(date): ansible-playbook gateway.yml success!"
-    fi
-
     exit_with 0 "INFO: $(date): ansible-playbook apps.yml success!"
 
 }
@@ -244,7 +235,7 @@ ${messages}
 system infos:
 ${systems}"
 
-    mail="http://system.bj.sensetime.com/sendmail.php"
+    mail="http://system.bj.mycorp.com/sendmail.php"
 
     set -x
     curl -F "message=${body}" -F "mailto=${RECEIVERS}" -F "title=${title}" ${mail} > /dev/null 2>&1
